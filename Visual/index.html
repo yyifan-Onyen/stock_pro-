@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tianming's Lab | Runs</title>
+  <style>
+    :root {
+      --bg: #060b16;
+      --panel: #0d1626;
+      --panel-2: #111c2f;
+      --accent: #5ce1ff;
+      --accent-2: #7b6cff;
+      --text: #e8f0ff;
+      --muted: #9ab1d6;
+      --border: #1c2740;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 15% 20%, rgba(92,225,255,0.08), transparent 20%),
+                  radial-gradient(circle at 85% 10%, rgba(123,108,255,0.08), transparent 18%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid; place-items: center;
+      font-weight: 800; color: #050912;
+      letter-spacing: 0.5px;
+    }
+    h1 { margin: 0; font-size: 26px; letter-spacing: 0.4px; }
+    .tagline { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+    .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 16px 28px rgba(0,0,0,0.35);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+    }
+    .card:hover { transform: translateY(-4px); border-color: var(--accent); }
+    .card h3 { margin: 0 0 8px; font-size: 16px; }
+    .card p { margin: 0 0 4px; color: var(--muted); font-size: 13px; }
+    .dates { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .date-pill {
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 13px;
+      text-decoration: none;
+      transition: border-color 0.2s ease;
+    }
+    .date-pill:hover { border-color: var(--accent); }
+    .empty {
+      border: 1px dashed var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">TL</div>
+      <div>
+        <h1>Tianming's Lab</h1>
+        <div class="tagline">Pick a run to view full reports</div>
+      </div>
+    </div>
+    <div class="actions">
+      <div class="pill">Multi-agent Trading Console</div>
+      <div class="pill">Reports + Risk Plans</div>
+    </div>
+  </header>
+
+  <main id="content">
+    <div class="empty">Loading runs…</div>
+  </main>
+
+  <script>
+    const content = document.getElementById('content');
+
+    function showError(message) {
+      content.innerHTML = '<div class="empty">Error: ' + message + '</div>';
+    }
+
+    window.addEventListener('error', (e) => {
+      showError(e.message || 'Unknown error');
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      showError((e.reason && e.reason.message) ? e.reason.message : String(e.reason || 'Unknown rejection'));
+    });
+
+    async function fetchRuns() {
+      const res = await fetch('/api/runs');
+      if (!res.ok) throw new Error(`Failed: ${res.status}`);
+      return res.json();
+    }
+
+    function renderRuns(data) {
+      if (!data.runs.length) {
+        content.innerHTML = '<div class="empty">No runs found yet. Run the CLI to generate reports.</div>';
+        return;
+      }
+      const wrapper = document.createElement('div');
+      const info = document.createElement('div');
+      info.className = 'pill';
+      info.style.marginBottom = '12px';
+      info.textContent = `${data.runs.length} ticker(s) found`;
+      wrapper.appendChild(info);
+
+      const grid = document.createElement('div');
+      grid.className = 'grid';
+      data.runs.forEach(run => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `<h3>${run.ticker}</h3><p>${run.dates.length} run(s)</p>`;
+        const dates = document.createElement('div');
+        dates.className = 'dates';
+        run.dates.slice().reverse().forEach(date => {
+          const link = document.createElement('a');
+          link.className = 'date-pill';
+          link.href = `/report.html?ticker=${encodeURIComponent(run.ticker)}&date=${encodeURIComponent(date)}&section=all`;
+          link.textContent = date;
+          dates.appendChild(link);
+        });
+        card.appendChild(dates);
+        grid.appendChild(card);
+      });
+      wrapper.appendChild(grid);
+      content.innerHTML = '';
+      content.appendChild(wrapper);
+    }
+
+    (async () => {
+      try {
+        const data = await fetchRuns();
+        renderRuns(data);
+      } catch (err) {
+        showError('Error loading runs: ' + (err && err.message ? err.message : String(err)));
+      }
+    })();
+  </script>
+</body>
+</html>

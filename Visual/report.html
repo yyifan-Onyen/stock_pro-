@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tianming's Lab | Report</title>
+  <style>
+    :root {
+      --bg: #050b15;
+      --panel: #0f192a;
+      --panel-2: #141f33;
+      --accent: #5ce1ff;
+      --accent-2: #7b6cff;
+      --text: #eaf1ff;
+      --muted: #96a9c8;
+      --border: #1d2942;
+      --green: #7ae8b1;
+      --red: #ff8f9b;
+      --yellow: #f7d774;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at 12% 18%, rgba(92,225,255,0.08), transparent 18%),
+                  radial-gradient(circle at 82% 6%, rgba(123,108,255,0.08), transparent 16%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 26px;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 18px;
+    }
+    aside {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      height: calc(100vh - 52px);
+      position: sticky;
+      top: 20px;
+      box-shadow: 0 14px 26px rgba(0,0,0,0.35);
+    }
+    header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .logo {
+      width: 40px; height: 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid; place-items: center;
+      color: #050b15; font-weight: 800;
+    }
+    h1 { margin: 0; font-size: 20px; letter-spacing: 0.3px; }
+    .muted { color: var(--muted); }
+    nav { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+    .nav-item {
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      color: var(--text);
+      text-decoration: none;
+      background: var(--panel-2);
+      transition: border-color 0.2s ease, background 0.2s ease;
+      font-size: 14px;
+    }
+    .nav-item:hover, .nav-item.active { border-color: var(--accent); }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .topbar .right {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.05s ease;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn:active { transform: translateY(1px); }
+    main { display: flex; flex-direction: column; gap: 18px; }
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 14px 26px rgba(0,0,0,0.35);
+    }
+    .section h2 { margin: 0 0 10px; font-size: 18px; color: var(--accent); }
+    .section small { color: var(--muted); }
+    .content { margin-top: 12px; line-height: 1.65; font-size: 14px; color: var(--text); }
+    .content p { margin: 0 0 10px; }
+    .content h1, .content h2, .content h3 { margin: 14px 0 10px; color: var(--text); }
+    .content h1 { font-size: 20px; }
+    .content h2 { font-size: 18px; }
+    .content h3 { font-size: 16px; }
+    .content ul, .content ol { margin: 0 0 12px 18px; }
+    .content li { margin: 6px 0; }
+    .content code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12.5px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+    }
+    .content pre {
+      overflow: auto;
+      padding: 14px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(6,11,21,0.65);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+      line-height: 1.55;
+    }
+    .content pre code {
+      padding: 0;
+      border: none;
+      background: transparent;
+      font-size: 12.5px;
+      display: block;
+      white-space: pre;
+    }
+    details {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      padding: 10px 12px;
+    }
+    summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .risk-card h3 { margin: 0 0 6px; }
+    .badge { padding: 4px 8px; border-radius: 8px; font-size: 12px; }
+    .badge.green { background: rgba(122,232,177,0.12); color: var(--green); }
+    .badge.red { background: rgba(255,143,155,0.12); color: var(--red); }
+    .badge.yellow { background: rgba(247,215,116,0.12); color: var(--yellow); }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    a.back { color: var(--accent); text-decoration: none; font-size: 14px; }
+    @media (max-width: 1000px) {
+      body { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <aside>
+    <header>
+      <div class="logo">TL</div>
+      <div>
+        <h1>Tianming's Lab</h1>
+        <div class="muted" id="meta"></div>
+      </div>
+    </header>
+    <nav id="nav"></nav>
+    <div style="margin-top:16px;"><a class="back" href="/index.html">← Back to runs</a></div>
+  </aside>
+
+  <main id="main"></main>
+
+  <script>
+    const main = document.getElementById('main');
+    const nav = document.getElementById('nav');
+    const meta = document.getElementById('meta');
+    window.addEventListener('error', (e) => {
+      main.innerHTML = `<div class="section">Error: ${e.message || 'Unknown error'}</div>`;
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      const msg = (e.reason && e.reason.message) ? e.reason.message : String(e.reason || 'Unknown rejection');
+      main.innerHTML = `<div class="section">Error: ${msg}</div>`;
+    });
+
+    const sections = [
+      { key: 'market_report', label: 'Market Analysis' },
+      { key: 'sentiment_report', label: 'Social Sentiment' },
+      { key: 'news_report', label: 'News Analysis' },
+      { key: 'fundamentals_report', label: 'Fundamentals Analysis' },
+      { key: 'investment_plan', label: 'Research Decision' },
+      { key: 'trader_investment_plan', label: 'Trading Plan' },
+      { key: 'final_trade_decision', label: 'Portfolio Manager' },
+    ];
+
+    const riskSections = [
+      { key: 'aggressive_plan', label: 'Aggressive Plan' },
+      { key: 'neutral_plan', label: 'Neutral Plan' },
+      { key: 'conservative_plan', label: 'Conservative Plan' },
+      { key: 'recommended_path', label: 'Recommended Path' },
+    ];
+
+    function getParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name) || '';
+    }
+
+    function setParam(name, value) {
+      const url = new URL(window.location.href);
+      url.searchParams.set(name, value);
+      window.history.replaceState({}, '', url);
+    }
+
+    function badgeForStance(stance = '') {
+      const s = stance.toLowerCase();
+      if (s.includes('buy')) return 'green';
+      if (s.includes('sell')) return 'red';
+      return 'yellow';
+    }
+
+    function escapeHTML(text) {
+      return (text || '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function stripFences(raw) {
+      const s = (raw || '').trim();
+      const m = s.match(/^```[a-zA-Z0-9_-]*\n([\s\S]*?)\n```$/);
+      return m ? m[1] : raw;
+    }
+
+    function inlineFormat(s) {
+      return (s || '')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/`(.+?)`/g, '<code>$1</code>');
+    }
+
+    function renderMarkdown(raw) {
+      const text = (raw || '').replace(/\r\n/g, '\n');
+      const fenceRe = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)\n```/g;
+      let out = '';
+      let last = 0;
+      let match;
+      while ((match = fenceRe.exec(text)) !== null) {
+        out += renderMarkdownInline(text.slice(last, match.index));
+        const lang = (match[1] || '').toLowerCase();
+        const code = escapeHTML(match[2] || '');
+        out += `<pre><code data-lang="${escapeHTML(lang)}">${code}</code></pre>`;
+        last = fenceRe.lastIndex;
+      }
+      out += renderMarkdownInline(text.slice(last));
+      return out;
+    }
+
+    function renderMarkdownInline(raw) {
+      const safe = escapeHTML(raw || '');
+      const lines = safe.split('\n');
+      let html = '';
+      let inUl = false;
+      let inOl = false;
+
+      function closeLists() {
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (inOl) { html += '</ol>'; inOl = false; }
+      }
+
+      for (const line of lines) {
+        const h = line.match(/^(#{1,3})\s+(.*)$/);
+        const ul = line.match(/^\s*[-*]\s+(.*)$/);
+        const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+        if (h) {
+          closeLists();
+          const level = h[1].length;
+          html += `<h${level}>${inlineFormat(h[2])}</h${level}>`;
+          continue;
+        }
+        if (ul) {
+          if (!inUl) { closeLists(); html += '<ul>'; inUl = true; }
+          html += `<li>${inlineFormat(ul[1])}</li>`;
+          continue;
+        }
+        if (ol) {
+          if (!inOl) { closeLists(); html += '<ol>'; inOl = true; }
+          html += `<li>${inlineFormat(ol[1])}</li>`;
+          continue;
+        }
+        if (!line.trim()) {
+          closeLists();
+          html += '<p></p>';
+          continue;
+        }
+        closeLists();
+        html += `<p>${inlineFormat(line)}</p>`;
+      }
+      closeLists();
+      return html;
+    }
+
+    function renderRiskCard(title, raw) {
+      let data;
+      try { data = JSON.parse(raw); } catch { data = null; }
+      const div = document.createElement('div');
+      div.className = 'section risk-card';
+      if (!data || typeof data !== 'object') {
+        div.innerHTML = `<h2>${title}</h2><div class="content">${renderMarkdown(raw || '—')}</div>`;
+        return div;
+      }
+      const stance = data.stance || '';
+      div.innerHTML = `
+        <h2>${title} <span class="badge ${badgeForStance(stance)}">${stance || '—'}</span></h2>
+        <div class="content"><strong>Rationale:</strong> ${data.rationale || '—'}</div>
+        <div class="content"><strong>Actions:</strong> ${data.actions || '—'}</div>
+        <div class="content"><strong>Risk Controls:</strong> ${data.risk_controls || '—'}</div>
+        <div class="content"><strong>Timeframe:</strong> ${data.timeframe || '—'}</div>
+      `;
+      return div;
+    }
+
+    function renderRecommended(raw) {
+      let data;
+      try { data = JSON.parse(raw); } catch { data = null; }
+      const div = document.createElement('div');
+      div.className = 'section';
+      div.id = 'recommended_path';
+      if (!data || typeof data !== 'object') {
+        div.innerHTML = `<div class="topbar"><div><h2>Recommended Path</h2><small class="muted">No structured output detected</small></div><div class="right"></div></div><div class="content">${renderMarkdown(raw || '—')}</div>`;
+        return div;
+      }
+      div.innerHTML = `
+        <div class="topbar">
+          <div>
+            <h2>Recommended Path <span class="badge ${badgeForStance(data.summary_decision || '')}">${data.summary_decision || '—'}</span></h2>
+            <small class="muted">Decision routing across persona plans</small>
+          </div>
+          <div class="right"><button class="btn" data-copy="${escapeHTML(raw || '')}">Copy</button></div>
+        </div>
+        <div class="chips">
+          <span class="pill">Pick: ${data.pick || '—'}</span>
+          <span class="pill">Decision: ${data.summary_decision || '—'}</span>
+        </div>
+        <div class="content" style="margin-top:10px;"><strong>Reason:</strong> ${data.reason || '—'}</div>
+      `;
+      return div;
+    }
+
+    function addNavItem(label, target) {
+      const a = document.createElement('a');
+      a.className = 'nav-item';
+      a.href = `?ticker=${encodeURIComponent(getParam('ticker'))}&date=${encodeURIComponent(getParam('date'))}&section=${encodeURIComponent(target)}`;
+      a.textContent = label;
+      nav.appendChild(a);
+    }
+
+    async function loadData() {
+      const ticker = getParam('ticker');
+      const date = getParam('date');
+      if (!ticker || !date) {
+        main.innerHTML = '<div class="section">Missing ticker or date.</div>';
+        return;
+      }
+      meta.textContent = `${ticker} — ${date}`;
+      try {
+        const res = await fetch(`/api/run/${encodeURIComponent(ticker)}/${encodeURIComponent(date)}`);
+        if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+        const data = await res.json();
+        renderPage(data);
+      } catch (err) {
+        main.innerHTML = `<div class="section">Error loading report: ${err.message}</div>`;
+      }
+    }
+
+    function renderPage(data) {
+      nav.innerHTML = '';
+      main.innerHTML = '';
+
+      const selectedSection = (getParam('section') || 'all').toLowerCase();
+      if (!getParam('section')) setParam('section', selectedSection);
+
+      addNavItem('All Reports', 'all');
+      for (const sec of sections) addNavItem(sec.label, sec.key);
+      addNavItem('Risk Plans', 'risk_plans');
+      addNavItem('Recommended Path', 'recommended_path');
+
+      [...nav.querySelectorAll('.nav-item')].forEach(a => {
+        const u = new URL(a.href);
+        if ((u.searchParams.get('section') || 'all') === selectedSection) a.classList.add('active');
+      });
+
+      function addSectionBlock(id, title, bodyHTML, rightHTML = '') {
+        const div = document.createElement('div');
+        div.className = 'section';
+        div.id = id;
+        div.innerHTML = `
+          <div class="topbar">
+            <div>
+              <h2>${title}</h2>
+              <small>${escapeHTML(data.ticker)} — ${escapeHTML(data.date)}</small>
+            </div>
+            <div class="right">${rightHTML}</div>
+          </div>
+          <div class="content">${bodyHTML}</div>
+        `;
+        main.appendChild(div);
+      }
+
+      function addMarkdownSection(sec) {
+        const raw = data.reports[sec.key] || '';
+        const unfenced = stripFences(raw || '');
+        let jsonParsed = null;
+        try { jsonParsed = JSON.parse(unfenced); } catch {}
+
+        if (sec.key === 'final_trade_decision' && jsonParsed && typeof jsonParsed === 'object') {
+          const decision =
+            (jsonParsed.recommended_path && jsonParsed.recommended_path.summary_decision)
+              ? jsonParsed.recommended_path.summary_decision
+              : '';
+          const summary = decision ? ` <span class="badge ${badgeForStance(decision)}">${escapeHTML(decision)}</span>` : '';
+          const pretty = escapeHTML(JSON.stringify(jsonParsed, null, 2));
+          addSectionBlock(
+            sec.key,
+            `${sec.label}${summary}`,
+            `
+              <p class="muted">Structured output detected. Use Risk Plans / Recommended Path for a clean view.</p>
+              <details>
+                <summary>Show raw JSON</summary>
+                <pre><code>${pretty}</code></pre>
+              </details>
+            `,
+            `<button class="btn" data-copy="${escapeHTML(unfenced)}">Copy JSON</button>`
+          );
+          return;
+        }
+
+        addSectionBlock(
+          sec.key,
+          sec.label,
+          renderMarkdown(raw || '—'),
+          `<button class="btn" data-copy="${escapeHTML(raw || '')}">Copy</button>`
+        );
+      }
+
+      if (selectedSection === 'all') {
+        sections.forEach(addMarkdownSection);
+      } else if (sections.some(s => s.key === selectedSection)) {
+        addMarkdownSection(sections.find(s => s.key === selectedSection));
+      }
+
+      // Risk plans
+      if (selectedSection === 'all' || selectedSection === 'risk_plans') {
+        const riskWrap = document.createElement('div');
+        riskWrap.className = 'section';
+        riskWrap.id = 'risk_plans';
+        const grid = document.createElement('div');
+        grid.className = 'grid';
+        grid.appendChild(renderRiskCard('Aggressive Plan', stripFences(data.reports.aggressive_plan || '')));
+        grid.appendChild(renderRiskCard('Neutral Plan', stripFences(data.reports.neutral_plan || '')));
+        grid.appendChild(renderRiskCard('Conservative Plan', stripFences(data.reports.conservative_plan || '')));
+        riskWrap.innerHTML = `<div class="topbar"><div><h2>Risk Plans</h2><small>Persona-specific execution templates</small></div><div class="right"></div></div>`;
+        riskWrap.appendChild(grid);
+        main.appendChild(riskWrap);
+      }
+
+      // Recommended
+      if (selectedSection === 'all' || selectedSection === 'recommended_path') {
+        main.appendChild(renderRecommended(stripFences(data.reports.recommended_path || '')));
+      }
+
+      // Wire copy buttons
+      main.querySelectorAll('[data-copy]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const text = btn.getAttribute('data-copy') || '';
+          try {
+            await navigator.clipboard.writeText(text);
+            btn.textContent = 'Copied';
+            setTimeout(() => (btn.textContent = 'Copy'), 900);
+          } catch {
+            btn.textContent = 'Copy failed';
+            setTimeout(() => (btn.textContent = 'Copy'), 900);
+          }
+        });
+      });
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

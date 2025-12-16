@@ -1,0 +1,11 @@
+目前计划
+
+出三个方案.
+
+可视化.
+
+
+export ALPACA_API_BASE_URL=https://paper-api.alpaca.markets 
+export ALPACA_API_KEY_ID=PKFYT3XQSC3L3ZG7SLEUOE27RR
+export ALPACA_API_SECRET=8h3NhMdoGvJoLoUhknR6UK8sHQZB9EHkEiAsUydqphZH
+
