@@ -4,3 +4,8 @@
 
 可视化.
 
+
+
+export ALPACA_API_BASE_URL=https://paper-api.alpaca.markets 
+export ALPACA_API_KEY_ID=PKANV2LZVXOWHFPJIUWNIH72M7
+export ALPACA_API_SECRET=HWUJ6KUgTX6EhKGx3pzphCt6fXRohj7taEQ9AwS24ZWa
