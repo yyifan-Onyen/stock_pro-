@@ -12,6 +12,7 @@ def create_trader(llm, memory):
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
         portfolio_state = state.get("portfolio_state", {}) or {}
+        prior_insights = state.get("prior_insights", []) or []
 
         curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
         past_memories = memory.get_memories(curr_situation, n_matches=2)
@@ -24,10 +25,19 @@ def create_trader(llm, memory):
             past_memory_str = "No past memories found."
 
         portfolio_context = json.dumps(portfolio_state, indent=2) if portfolio_state else "Not provided"
+        prior_context = json.dumps(prior_insights, indent=2) if prior_insights else "None provided"
 
         context = {
             "role": "user",
-            "content": f"Based on a comprehensive analysis by a team of analysts, here is an investment plan tailored for {company_name}. This plan incorporates insights from current technical market trends, macroeconomic indicators, and social media sentiment. Use this plan as a foundation for evaluating your next trading decision.\n\nProposed Investment Plan: {investment_plan}\n\nCurrent portfolio state (if any) to respect when sizing/hedging: {portfolio_context}\n\nLeverage these insights to make an informed and strategic decision.",
+            "content": (
+                f"Based on a comprehensive analysis by a team of analysts, here is an investment plan tailored for {company_name}. "
+                f"This plan incorporates insights from current technical market trends, macroeconomic indicators, and social media sentiment. "
+                f"Use this plan as a foundation for evaluating your next trading decision.\n\n"
+                f"Proposed Investment Plan: {investment_plan}\n\n"
+                f"Current portfolio state (if any) to respect when sizing/hedging: {portfolio_context}\n\n"
+                f"Prior cross-ticker insights to avoid over-concentration or conflicting positions: {prior_context}\n\n"
+                f"Leverage these insights to make an informed and strategic decision."
+            ),
         }
 
         messages = [

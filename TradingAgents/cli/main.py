@@ -33,6 +33,110 @@ from cli.models import AnalystType
 from cli.utils import *
 
 console = Console()
+SESSION_STATE_FILENAME = "session_state.json"
+
+
+def get_session_state_path(results_dir: str) -> Path:
+    """Resolve a session state path near the results directory."""
+    results_root = Path(results_dir).resolve()
+    return results_root.parent / SESSION_STATE_FILENAME
+
+
+def load_session_state(session_path: Path) -> dict:
+    """Load cross-ticker session state safely."""
+    if not session_path.exists():
+        return {"insights": []}
+    try:
+        with open(session_path, "r") as f:
+            data = json.load(f)
+        if not isinstance(data, dict) or "insights" not in data:
+            return {"insights": []}
+        return data
+    except Exception:
+        console.print(
+            f"[red]Failed to read {session_path}. Starting fresh session state.[/red]"
+        )
+        return {"insights": []}
+
+
+def save_session_state(session_state: dict, session_path: Path) -> None:
+    """Persist session state; caller ensures content correctness."""
+    session_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(session_path, "w") as f:
+        json.dump(session_state, f, indent=2)
+
+
+def _parse_jsonish(content):
+    """Try to parse JSON string content; fall back to raw."""
+    if isinstance(content, dict):
+        return content
+    if isinstance(content, str):
+        try:
+            return json.loads(content)
+        except Exception:
+            return content
+    return content
+
+
+def build_session_entry(final_state: dict) -> dict:
+    """Extract a compact, cross-ticker insight entry from the final state."""
+    risk_state = final_state.get("risk_debate_state", {}) or {}
+    recommended_raw = (
+        risk_state.get("recommended_path")
+        or final_state.get("recommended_path")
+        or final_state.get("final_trade_decision")
+    )
+    recommended = _parse_jsonish(recommended_raw)
+
+    aggressive_plan = _parse_jsonish(risk_state.get("aggressive_plan"))
+    neutral_plan = _parse_jsonish(risk_state.get("neutral_plan"))
+    conservative_plan = _parse_jsonish(risk_state.get("conservative_plan"))
+
+    stance = None
+    if isinstance(recommended, dict):
+        stance = (
+            recommended.get("summary_decision")
+            or recommended.get("decision")
+            or recommended.get("pick")
+        )
+    if not stance:
+        stance = final_state.get("final_trade_decision")
+
+    summary_reason = None
+    if isinstance(recommended, dict):
+        summary_reason = recommended.get("reason") or recommended.get("rationale")
+
+    return {
+        "ticker": final_state.get("company_of_interest"),
+        "trade_date": final_state.get("trade_date"),
+        "stance": stance,
+        "recommended_path": recommended,
+        "risk_plans": {
+            "aggressive": aggressive_plan,
+            "neutral": neutral_plan,
+            "conservative": conservative_plan,
+        },
+        "final_trade_decision": final_state.get("final_trade_decision"),
+        "portfolio_state": final_state.get("portfolio_state", {}),
+        "investment_plan": final_state.get("investment_plan"),
+        "summary_reason": summary_reason,
+    }
+
+
+def append_session_entry(session_state: dict, entry: dict) -> dict:
+    """Upsert a ticker/date insight into session state."""
+    insights = session_state.get("insights", []) or []
+    filtered = [
+        i
+        for i in insights
+        if not (
+            i.get("ticker") == entry.get("ticker")
+            and i.get("trade_date") == entry.get("trade_date")
+        )
+    ]
+    filtered.append(entry)
+    session_state["insights"] = filtered
+    return session_state
 
 app = typer.Typer(
     name="TradingAgents",
@@ -938,7 +1042,9 @@ def reset_message_buffer():
         message_buffer.report_sections[section] = None
 
 
-def run_single_ticker(ticker, selections, base_config, graph, layout):
+def run_single_ticker(
+    ticker, selections, base_config, graph, layout, session_state, session_state_path
+):
     reset_message_buffer()
 
     config = base_config.copy()
@@ -972,7 +1078,7 @@ def run_single_ticker(ticker, selections, base_config, graph, layout):
     update_display(layout, spinner_text)
 
     init_agent_state = graph.propagator.create_initial_state(
-        ticker, selections["analysis_date"]
+        ticker, selections["analysis_date"], prior_insights=session_state.get("insights", [])
     )
     init_agent_state["portfolio_state"] = selections.get("portfolio_state", {}) or {}
     args = graph.propagator.get_graph_args()
@@ -1176,8 +1282,22 @@ def run_single_ticker(ticker, selections, base_config, graph, layout):
         if section in final_state:
             message_buffer.update_report_section(section, final_state[section])
 
+    try:
+        entry = build_session_entry(final_state)
+        session_state = append_session_entry(session_state, entry)
+        save_session_state(session_state, session_state_path)
+        message_buffer.add_message(
+            "System", f"Session state updated → {session_state_path}"
+        )
+    except Exception as exc:
+        message_buffer.add_message(
+            "System",
+            f"Failed to update session state ({exc}). Continue without persistence.",
+        )
+
     display_complete_report(final_state)
     update_display(layout)
+    return session_state
 
 
 def run_analysis():
@@ -1201,9 +1321,20 @@ def run_analysis():
 
     layout = create_layout()
 
+    session_state_path = get_session_state_path(base_config["results_dir"])
+    session_state = load_session_state(session_state_path)
+
     with Live(layout, refresh_per_second=4) as live:
         for ticker in selections["tickers"]:
-            run_single_ticker(ticker, selections, base_config, graph, layout)
+            session_state = run_single_ticker(
+                ticker,
+                selections,
+                base_config,
+                graph,
+                layout,
+                session_state,
+                session_state_path,
+            )
 
 @app.command()
 def analyze():

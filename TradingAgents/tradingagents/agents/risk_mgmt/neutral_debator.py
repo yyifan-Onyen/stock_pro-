@@ -16,9 +16,11 @@ def create_neutral_debator(llm):
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
         portfolio_state = state.get("portfolio_state", {}) or {}
+        prior_insights = state.get("prior_insights", []) or []
 
         trader_decision = state["trader_investment_plan"]
         portfolio_context = json.dumps(portfolio_state, indent=2) if portfolio_state else "Not provided"
+        prior_context = json.dumps(prior_insights, indent=2) if prior_insights else "None provided"
 
         prompt = f"""As the Neutral Risk Analyst, your role is to provide a balanced perspective, weighing both the potential benefits and risks of the trader's decision or plan. You prioritize a well-rounded approach, evaluating the upsides and downsides while factoring in broader market trends, potential economic shifts, and diversification strategies.Here is the trader's decision:
 
@@ -31,6 +33,7 @@ Social Media Sentiment Report: {sentiment_report}
 Latest World Affairs Report: {news_report}
 Company Fundamentals Report: {fundamentals_report}
 Portfolio State (respect sizing/hedging relative to this): {portfolio_context}
+Cross-ticker prior insights (respect overall exposure/hedges): {prior_context}
 Here is the current conversation history: {history} Here is the last response from the risky analyst: {current_risky_response} Here is the last response from the safe analyst: {current_safe_response}. If there are no responses from the other viewpoints, do not halluncinate and just present your point.
 
 Engage actively by analyzing both sides critically, addressing weaknesses in the risky and conservative arguments to advocate for a more balanced approach. Challenge each of their points to illustrate why a moderate risk strategy might offer the best of both worlds, providing growth potential while safeguarding against extreme volatility. Focus on debating rather than simply presenting data, aiming to show that a balanced view can lead to the most reliable outcomes. Output conversationally as if you are speaking without any special formatting."""

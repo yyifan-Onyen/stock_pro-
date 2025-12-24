@@ -67,6 +67,9 @@ class PortfolioState(TypedDict, total=False):
 class AgentState(MessagesState):
     company_of_interest: Annotated[str, "Company that we are interested in trading"]
     trade_date: Annotated[str, "What date we are trading at"]
+    prior_insights: Annotated[
+        Sequence[Any], "Cross-ticker prior recommendations and risk notes"
+    ]
 
     sender: Annotated[str, "Agent that sent this message"]
 

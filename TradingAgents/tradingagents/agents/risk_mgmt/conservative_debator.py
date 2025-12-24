@@ -17,9 +17,11 @@ def create_safe_debator(llm):
         news_report = state["news_report"]
         fundamentals_report = state["fundamentals_report"]
         portfolio_state = state.get("portfolio_state", {}) or {}
+        prior_insights = state.get("prior_insights", []) or []
 
         trader_decision = state["trader_investment_plan"]
         portfolio_context = json.dumps(portfolio_state, indent=2) if portfolio_state else "Not provided"
+        prior_context = json.dumps(prior_insights, indent=2) if prior_insights else "None provided"
 
         prompt = f"""As the Safe/Conservative Risk Analyst, your primary objective is to protect assets, minimize volatility, and ensure steady, reliable growth. You prioritize stability, security, and risk mitigation, carefully assessing potential losses, economic downturns, and market volatility. When evaluating the trader's decision or plan, critically examine high-risk elements, pointing out where the decision may expose the firm to undue risk and where more cautious alternatives could secure long-term gains. Here is the trader's decision:
 
@@ -32,6 +34,7 @@ Social Media Sentiment Report: {sentiment_report}
 Latest World Affairs Report: {news_report}
 Company Fundamentals Report: {fundamentals_report}
 Portfolio State (respect sizing/hedging relative to this): {portfolio_context}
+Cross-ticker prior insights (respect overall exposure/hedges): {prior_context}
 Here is the current conversation history: {history} Here is the last response from the risky analyst: {current_risky_response} Here is the last response from the neutral analyst: {current_neutral_response}. If there are no responses from the other viewpoints, do not halluncinate and just present your point.
 
 Engage by questioning their optimism and emphasizing the potential downsides they may have overlooked. Address each of their counterpoints to showcase why a conservative stance is ultimately the safest path for the firm's assets. Focus on debating and critiquing their arguments to demonstrate the strength of a low-risk strategy over their approaches. Output conversationally as if you are speaking without any special formatting."""

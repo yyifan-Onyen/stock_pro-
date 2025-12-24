@@ -9,7 +9,7 @@
 ```bash
 cd TradingAgents
 # 按照 TradingAgents/README.md 配好依赖和 API Key
-python -m cli.main
+python3 -m cli.main
 ```
 
 运行完成后会在 `TradingAgents/results/<ticker>/<date>/reports/` 生成报告文件。

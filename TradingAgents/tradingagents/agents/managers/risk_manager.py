@@ -15,6 +15,7 @@ def create_risk_manager(llm, memory):
         sentiment_report = state["sentiment_report"]
         trader_plan = state["investment_plan"]
         portfolio_state = state.get("portfolio_state", {}) or {}
+        prior_insights = state.get("prior_insights", []) or []
 
         curr_situation = f"{market_research_report}\n\n{sentiment_report}\n\n{news_report}\n\n{fundamentals_report}"
         past_memories = memory.get_memories(curr_situation, n_matches=2)
@@ -24,8 +25,9 @@ def create_risk_manager(llm, memory):
             past_memory_str += rec["recommendation"] + "\n\n"
 
         portfolio_context = json.dumps(portfolio_state, indent=2) if portfolio_state else "Not provided"
+        prior_context = json.dumps(prior_insights, indent=2) if prior_insights else "None provided"
 
-        prompt = f"""As the Risk Management Judge and Debate Facilitator, you must produce three risk-adjusted plans (Aggressive, Neutral, Conservative) plus a recommended path. You are deciding on how to adapt the trader's plan **{trader_plan}** using arguments from the debate, lessons from past mistakes **{past_memory_str}**, and the current portfolio context **{portfolio_context}**. Hold is allowed only with strong justification.
+        prompt = f"""As the Risk Management Judge and Debate Facilitator, you must produce three risk-adjusted plans (Aggressive, Neutral, Conservative) plus a recommended path. You are deciding on how to adapt the trader's plan **{trader_plan}** using arguments from the debate, lessons from past mistakes **{past_memory_str}**, the current portfolio context **{portfolio_context}**, and prior cross-ticker insights **{prior_context}**. Hold is allowed only with strong justification.
 
 Return **strict JSON only** with this shape:
 {{
